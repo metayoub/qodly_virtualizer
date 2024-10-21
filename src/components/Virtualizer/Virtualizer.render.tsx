@@ -1,10 +1,14 @@
 import {
   selectResolver,
   useEnhancedEditor,
+  useEnhancedNode,
   useRenderer,
   useSources,
   EntityProvider,
   useDataLoader,
+  useDsChangeHandler,
+  entitySubject,
+  EntityActions,
 } from '@ws-ui/webform-editor';
 import cn from 'classnames';
 import { FC, useEffect, useRef, useState } from 'react';
@@ -13,9 +17,12 @@ import { IVirtualizerProps } from './Virtualizer.config';
 import { Element } from '@ws-ui/craftjs-core';
 
 const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classNames = [] }) => {
-  const { connect } = useRenderer();
+  const { connect, emit } = useRenderer();
+  const { id: nodeID } = useEnhancedNode();
   const parentRef = useRef(null);
-  const [length, setLength] = useState(() => 0);
+  const [selected, setSelected] = useState(-1);
+  const [_scrollIndex, setScrollIndex] = useState(0);
+  const [count, setCount] = useState(0);
   const {
     sources: { datasource: ds, currentElement: currentDs },
   } = useSources();
@@ -23,10 +30,10 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
     source: ds,
   });
 
-  const { resolver, query } = useEnhancedEditor(selectResolver);
+  const { resolver } = useEnhancedEditor(selectResolver);
 
   const virtualizer = useVirtualizer({
-    count: length,
+    count: count,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 45,
     enabled: true,
@@ -39,12 +46,45 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
     if (!ds) return;
     const init = async () => {
       const selLength = await ds.getValue('length');
-      setLength(selLength);
+      setCount(selLength);
       await fetchIndex(0);
     };
 
     init();
   }, []);
+
+  const { updateCurrentDsValue } = useDsChangeHandler({
+    source: ds,
+    currentDs,
+    selected,
+    setSelected,
+    setScrollIndex,
+    setCount,
+    fetchIndex,
+    onDsChange: (length, selected) => {
+      if (selected >= 0) {
+        updateCurrentDsValue({
+          index: selected < length ? selected : 0,
+          forceUpdate: true,
+        });
+      }
+    },
+    onCurrentDsChange: (selected) => {
+      entitySubject.next({
+        action: EntityActions.UPDATE,
+        payload: {
+          nodeID,
+          index: selected,
+        },
+      });
+    },
+  });
+
+  const handleClick = async (index: number) => {
+    setSelected(index);
+    await updateCurrentDsValue({ index });
+    emit!('onselect');
+  };
 
   return (
     <div ref={connect} className={cn('w-fit h-fit', className, classNames)}>
@@ -78,7 +118,11 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
                 key={virtualRow.key}
                 data-index={virtualRow.index}
                 ref={virtualizer.measureElement}
-                className={virtualRow.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
+                className={cn({
+                  selected: virtualRow.index === selected,
+                  'bg-purple-200': virtualRow.index === selected,
+                })}
+                onClick={() => handleClick(virtualRow.index)}
               >
                 <EntityProvider
                   index={virtualRow.index}
