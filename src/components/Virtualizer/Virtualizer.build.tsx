@@ -55,12 +55,12 @@ const Virtualizer: FC<IVirtualizerProps> = ({
           style={
             orientation === 'vertical'
               ? {
-                  height: `${virtualizer.getTotalSize()}px`,
+                  height: `fit-content`,
                   width: '100%',
                   position: 'relative',
                 }
               : {
-                  width: `${virtualizer.getTotalSize()}px`,
+                  width: `fit-content`,
                   height: '100%',
                   position: 'relative',
                 }
