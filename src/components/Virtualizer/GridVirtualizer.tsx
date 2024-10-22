@@ -18,38 +18,29 @@ const GridVirtualizer: FC<IVirtualizer> = ({
   count,
   handleClick,
   resolver,
+  columns = 4,
 }) => {
   const parentOffsetRef = useRef(0);
-
-  const getColumnWidth = (index: number) => 350;
 
   useLayoutEffect(() => {
     parentOffsetRef.current = parentRef.current?.offsetTop ?? 0;
   }, []);
 
-  const virtualizer = useWindowVirtualizer({
-    count: count,
-    overscan: 5,
-    scrollMargin: parentOffsetRef.current,
+  const virtualizer = useVirtualizer({
+    count: Math.floor(count / columns) + 1,
+    getScrollElement: () => parentRef.current,
     estimateSize: () => 450,
   });
 
-  const columnVirtualizer = useVirtualizer({
-    horizontal: true,
-    count: 5,
-    getScrollElement: () => parentRef.current,
-    estimateSize: getColumnWidth,
-    overscan: 5,
+  const columnVirtualizer = useWindowVirtualizer({
+    count: columns,
+    scrollMargin: parentOffsetRef.current,
+
+    estimateSize: () => 45,
   });
 
   const columnItems = columnVirtualizer.getVirtualItems();
-  const [before, after] =
-    columnItems.length > 0
-      ? [
-          columnItems[0].start,
-          columnVirtualizer.getTotalSize() - columnItems[columnItems.length - 1].end,
-        ]
-      : [0, 0];
+
   return (
     <div
       ref={connect}
@@ -81,34 +72,41 @@ const GridVirtualizer: FC<IVirtualizer> = ({
                 display: 'flex',
               }}
             >
-              <div style={{ width: `${before}px` }} />
               {columnItems.map((column) => {
                 return (
                   <div
                     key={column.key}
                     style={{
-                      minHeight: row.index === 0 ? 50 : row.size,
-                      width: getColumnWidth(column.index),
+                      width: 'fit-content',
+                      height: 'fit-content',
                     }}
+                    className={cn('virtualizer-item', {
+                      selected: row.index * columns + column.index === selected,
+                      'bg-purple-200': row.index * columns + column.index === selected,
+                      'virtualizer-item-odd': row.index * columns + (column.index % 2) === 0,
+                      'virtualizer-item-even': row.index * columns + (column.index % 2) === 1,
+                    })}
+                    onClick={() => handleClick(row.index * columns + column.index)}
                   >
-                    <EntityProvider
-                      index={column.index + row.index}
-                      selection={ds}
-                      current={currentDs?.id}
-                      iterator={iterator}
-                    >
-                      <Element
-                        id="element"
-                        className="h-full w-full "
-                        role="element"
-                        is={resolver.StyleBox}
-                        canvas
-                      />
-                    </EntityProvider>
+                    {row.index * columns + column.index < count ? (
+                      <EntityProvider
+                        index={row.index * columns + column.index}
+                        selection={ds}
+                        current={currentDs?.id}
+                        iterator={iterator}
+                      >
+                        <Element
+                          id="element"
+                          className="h-full w-full "
+                          role="element"
+                          is={resolver.StyleBox}
+                          canvas
+                        />
+                      </EntityProvider>
+                    ) : null}
                   </div>
                 );
               })}
-              <div style={{ width: `${after}px` }} />
             </div>
           ))}
         </div>

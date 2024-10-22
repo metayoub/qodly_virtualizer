@@ -9,6 +9,7 @@ export default {
     kind: EComponentKind.BASIC,
     props: {
       orientation: 'vertical',
+      columns: 4,
       classNames: [],
       events: [],
     },
@@ -63,6 +64,8 @@ export default {
   },
   defaultProps: {
     orientation: 'vertical',
+    columns: 4,
+    classNames: [],
     iterable: true,
     style: {
       height: `200px`,
@@ -73,6 +76,7 @@ export default {
 
 export interface IVirtualizerProps extends webforms.ComponentProps {
   orientation?: 'horizontal' | 'vertical' | 'grid';
+  columns?: number;
 }
 
 export interface IVirtualizer extends webforms.ComponentProps {
@@ -84,4 +88,5 @@ export interface IVirtualizer extends webforms.ComponentProps {
   parentRef: any;
   resolver: any;
   count: number;
+  columns?: number;
 }
