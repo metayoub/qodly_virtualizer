@@ -1,7 +1,6 @@
 import { EComponentKind, T4DComponentConfig } from '@ws-ui/webform-editor';
 import { Settings } from '@ws-ui/webform-editor';
 import { MdViewDay } from 'react-icons/md';
-
 import VirtualizerSettings, { BasicSettings } from './Virtualizer.settings';
 
 export default {
@@ -74,4 +73,15 @@ export default {
 
 export interface IVirtualizerProps extends webforms.ComponentProps {
   orientation?: 'horizontal' | 'vertical' | 'grid';
+}
+
+export interface IVirtualizer extends webforms.ComponentProps {
+  connect: (ref: any, omit?: string[]) => any;
+  selected: number;
+  handleClick: (index: number) => void;
+  ds: datasources.DataSource;
+  currentDs: datasources.DataSource;
+  parentRef: any;
+  resolver: any;
+  count: number;
 }

@@ -4,17 +4,16 @@ import {
   useEnhancedNode,
   useRenderer,
   useSources,
-  EntityProvider,
   useDataLoader,
   useDsChangeHandler,
   entitySubject,
   EntityActions,
 } from '@ws-ui/webform-editor';
-import cn from 'classnames';
 import { FC, useEffect, useRef, useState } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import { IVirtualizerProps } from './Virtualizer.config';
-import { Element } from '@ws-ui/craftjs-core';
+import VerticalVirtualizer from './VerticalVirtualizer';
+import HorizontalVirtualizer from './HorizontalVirtualizer';
+import GridVirtualizer from './GridVirtualizer';
 
 const Virtualizer: FC<IVirtualizerProps> = ({
   orientation = 'vertical',
@@ -38,15 +37,6 @@ const Virtualizer: FC<IVirtualizerProps> = ({
   });
 
   const { resolver } = useEnhancedEditor(selectResolver);
-
-  const virtualizer = useVirtualizer({
-    horizontal: orientation === 'horizontal',
-    count: count,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 45,
-  });
-
-  const items = virtualizer.getVirtualItems();
 
   useEffect(() => {
     // useEffect to fetch data for the first Time
@@ -93,127 +83,64 @@ const Virtualizer: FC<IVirtualizerProps> = ({
     emit!('onselect');
   };
 
-  return (
-    <div
-      ref={connect}
-      style={style}
-      id="virtualizer"
-      className={cn('w-fit h-fit', className, classNames)}
-    >
-      {orientation === 'vertical' ? (
-        <div
-          ref={parentRef}
-          id="virtualizer-list"
-          className="virtualizer-list"
-          style={{
-            height: '100%',
-            width: '100%',
-            overflowY: 'auto',
-            contain: 'strict',
-          }}
-        >
-          <div
-            style={{
-              height: `${virtualizer.getTotalSize()}px`,
-              width: '100%',
-              position: 'relative',
-            }}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${items[0]?.start ?? 0}px)`,
-              }}
-            >
-              {items.map((virtualRow) => (
-                <div
-                  key={virtualRow.key}
-                  data-index={virtualRow.index}
-                  ref={virtualizer.measureElement}
-                  className={cn('virtualizer-item', {
-                    selected: virtualRow.index === selected,
-                    'bg-purple-200': virtualRow.index === selected,
-                    'virtualizer-item-odd': virtualRow.index % 2 === 0,
-                    'virtualizer-item-even': virtualRow.index % 2 === 1,
-                  })}
-                  onClick={() => handleClick(virtualRow.index)}
-                >
-                  <EntityProvider
-                    index={virtualRow.index}
-                    selection={ds}
-                    current={currentDs?.id}
-                    iterator={iterator}
-                  >
-                    <Element
-                      id="element"
-                      className="h-full w-full "
-                      role="element"
-                      is={resolver.StyleBox}
-                      canvas
-                    />
-                  </EntityProvider>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div
-          ref={parentRef}
-          className="List"
-          style={{ height: '100%', width: '100%', overflowY: 'auto' }}
-        >
-          <div
-            style={{
-              width: virtualizer.getTotalSize(),
-              height: '100%',
-              position: 'relative',
-            }}
-          >
-            {items.map((virtualColumn) => (
-              <div
-                key={virtualColumn.key}
-                data-index={virtualColumn.index}
-                ref={virtualizer.measureElement}
-                className={cn('virtualizer-item', {
-                  selected: virtualColumn.index === selected,
-                  'bg-purple-200': virtualColumn.index === selected,
-                  'virtualizer-item-odd': virtualColumn.index % 2 === 0,
-                  'virtualizer-item-even': virtualColumn.index % 2 === 1,
-                })}
-                onClick={() => handleClick(virtualColumn.index)}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  height: '100%',
-                  transform: `translateX(${virtualColumn.start}px)`,
-                }}
-              >
-                <EntityProvider
-                  index={virtualColumn.index}
-                  selection={ds}
-                  current={currentDs?.id}
-                  iterator={iterator}
-                >
-                  <Element
-                    id="element"
-                    className="h-full w-full "
-                    role="element"
-                    is={resolver.StyleBox}
-                    canvas
-                  />
-                </EntityProvider>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  switch (orientation) {
+    case 'vertical':
+      return (
+        <VerticalVirtualizer
+          connect={connect}
+          iterator={iterator}
+          style={style}
+          className={className}
+          classNames={classNames}
+          selected={selected}
+          ds={ds}
+          currentDs={currentDs}
+          parentRef={parentRef}
+          count={count}
+          handleClick={handleClick}
+          resolver={resolver}
+        />
+      );
+
+    case 'horizontal':
+      return (
+        <HorizontalVirtualizer
+          connect={connect}
+          iterator={iterator}
+          style={style}
+          className={className}
+          classNames={classNames}
+          selected={selected}
+          ds={ds}
+          currentDs={currentDs}
+          parentRef={parentRef}
+          count={count}
+          handleClick={handleClick}
+          resolver={resolver}
+        />
+      );
+
+    case 'grid':
+      return (
+        <GridVirtualizer
+          connect={connect}
+          iterator={iterator}
+          style={style}
+          className={className}
+          classNames={classNames}
+          selected={selected}
+          ds={ds}
+          currentDs={currentDs}
+          parentRef={parentRef}
+          count={count}
+          handleClick={handleClick}
+          resolver={resolver}
+        />
+      );
+
+    default:
+      return null;
+  }
 };
 
 export default Virtualizer;
