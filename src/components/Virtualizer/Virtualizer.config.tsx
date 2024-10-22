@@ -9,7 +9,7 @@ export default {
     displayName: 'Virtualizer',
     kind: EComponentKind.BASIC,
     props: {
-      name: '',
+      orientation: 'vertical',
       classNames: [],
       events: [],
     },
@@ -63,7 +63,7 @@ export default {
     },
   },
   defaultProps: {
-    name: 'Qodly',
+    orientation: 'vertical',
     iterable: true,
     style: {
       height: `200px`,
@@ -73,5 +73,5 @@ export default {
 } as T4DComponentConfig<IVirtualizerProps>;
 
 export interface IVirtualizerProps extends webforms.ComponentProps {
-  name?: string;
+  orientation?: 'horizontal' | 'vertical' | 'grid';
 }

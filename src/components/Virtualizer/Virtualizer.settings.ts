@@ -1,13 +1,32 @@
 import { DEFAULT_ITERATOR, ESetting, ETextFieldModifier, TSetting } from '@ws-ui/webform-editor';
 import { BASIC_SETTINGS, DEFAULT_SETTINGS, load } from '@ws-ui/webform-editor';
 import { validateServerSide } from '@ws-ui/shared';
+import { PiArrowsInLineHorizontal, PiArrowsInLineVertical, PiGridNineFill } from 'react-icons/pi';
 
 const commonSettings: TSetting[] = [
   {
-    key: 'name',
-    label: 'Name',
-    type: ESetting.TEXT_FIELD,
-    defaultValue: 'Qodly',
+    label: 'Orientation',
+    type: ESetting.RADIOGROUP,
+    defaultValue: 'vertical',
+    key: 'orientation',
+    multiple: false,
+    options: [
+      {
+        value: 'horizontal',
+        tooltip: 'Horizontal',
+        icon: PiArrowsInLineHorizontal,
+      },
+      {
+        value: 'vertical',
+        tooltip: 'Vertical',
+        icon: PiArrowsInLineVertical,
+      },
+      {
+        value: 'grid',
+        tooltip: 'Grid',
+        icon: PiGridNineFill,
+      },
+    ],
   },
 ];
 
