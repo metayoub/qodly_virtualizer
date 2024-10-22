@@ -16,7 +16,13 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { IVirtualizerProps } from './Virtualizer.config';
 import { Element } from '@ws-ui/craftjs-core';
 
-const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classNames = [] }) => {
+const Virtualizer: FC<IVirtualizerProps> = ({
+  orientation = 'vertical',
+  iterator,
+  style,
+  className,
+  classNames = [],
+}) => {
   const { connect, emit } = useRenderer();
   const { id: nodeID } = useEnhancedNode();
   const parentRef = useRef(null);
@@ -34,10 +40,10 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
   const { resolver } = useEnhancedEditor(selectResolver);
 
   const virtualizer = useVirtualizer({
+    horizontal: orientation === 'horizontal',
     count: count,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 45,
-    enabled: true,
   });
 
   const items = virtualizer.getVirtualItems();
@@ -94,48 +100,101 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
       id="virtualizer"
       className={cn('w-fit h-fit', className, classNames)}
     >
-      <div
-        ref={parentRef}
-        id="virtualizer-list"
-        className="virtualizer-list"
-        style={{
-          height: '100%',
-          width: '100%',
-          overflowY: 'auto',
-          contain: 'strict',
-        }}
-      >
+      {orientation === 'vertical' ? (
         <div
+          ref={parentRef}
+          id="virtualizer-list"
+          className="virtualizer-list"
           style={{
-            height: `${virtualizer.getTotalSize()}px`,
+            height: '100%',
             width: '100%',
-            position: 'relative',
+            overflowY: 'auto',
+            contain: 'strict',
           }}
         >
           <div
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
+              height: `${virtualizer.getTotalSize()}px`,
               width: '100%',
-              transform: `translateY(${items[0]?.start ?? 0}px)`,
+              position: 'relative',
             }}
           >
-            {items.map((virtualRow) => (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${items[0]?.start ?? 0}px)`,
+              }}
+            >
+              {items.map((virtualRow) => (
+                <div
+                  key={virtualRow.key}
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                  className={cn('virtualizer-item', {
+                    selected: virtualRow.index === selected,
+                    'bg-purple-200': virtualRow.index === selected,
+                    'virtualizer-item-odd': virtualRow.index % 2 === 0,
+                    'virtualizer-item-even': virtualRow.index % 2 === 1,
+                  })}
+                  onClick={() => handleClick(virtualRow.index)}
+                >
+                  <EntityProvider
+                    index={virtualRow.index}
+                    selection={ds}
+                    current={currentDs?.id}
+                    iterator={iterator}
+                  >
+                    <Element
+                      id="element"
+                      className="h-full w-full "
+                      role="element"
+                      is={resolver.StyleBox}
+                      canvas
+                    />
+                  </EntityProvider>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div
+          ref={parentRef}
+          className="List"
+          style={{ height: '100%', width: '100%', overflowY: 'auto' }}
+        >
+          <div
+            style={{
+              width: virtualizer.getTotalSize(),
+              height: '100%',
+              position: 'relative',
+            }}
+          >
+            {items.map((virtualColumn) => (
               <div
-                key={virtualRow.key}
-                data-index={virtualRow.index}
+                key={virtualColumn.key}
+                data-index={virtualColumn.index}
                 ref={virtualizer.measureElement}
                 className={cn('virtualizer-item', {
-                  selected: virtualRow.index === selected,
-                  'bg-purple-200': virtualRow.index === selected,
-                  'virtualizer-item-odd': virtualRow.index % 2 === 0,
-                  'virtualizer-item-even': virtualRow.index % 2 === 1,
+                  selected: virtualColumn.index === selected,
+                  'bg-purple-200': virtualColumn.index === selected,
+                  'virtualizer-item-odd': virtualColumn.index % 2 === 0,
+                  'virtualizer-item-even': virtualColumn.index % 2 === 1,
                 })}
-                onClick={() => handleClick(virtualRow.index)}
+                onClick={() => handleClick(virtualColumn.index)}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  height: '100%',
+                  transform: `translateX(${virtualColumn.start}px)`,
+                }}
               >
                 <EntityProvider
-                  index={virtualRow.index}
+                  index={virtualColumn.index}
                   selection={ds}
                   current={currentDs?.id}
                   iterator={iterator}
@@ -152,7 +211,7 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
             ))}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -11,7 +11,12 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { IVirtualizerProps } from './Virtualizer.config';
 import { Element } from '@ws-ui/craftjs-core';
 
-const Virtualizer: FC<IVirtualizerProps> = ({ style, className, classNames = [] }) => {
+const Virtualizer: FC<IVirtualizerProps> = ({
+  orientation = 'vertical',
+  style,
+  className,
+  classNames = [],
+}) => {
   const {
     connectors: { connect },
   } = useEnhancedNode();
@@ -19,9 +24,10 @@ const Virtualizer: FC<IVirtualizerProps> = ({ style, className, classNames = [] 
   const parentRef = useRef(null);
   const { resolver } = useEnhancedEditor(selectResolver);
   const virtualizer = useVirtualizer({
+    horizontal: orientation === 'horizontal',
     count: 10000,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 35,
+    estimateSize: () => (orientation === 'horizontal' ? 100 : 45),
     overscan: 5,
   });
 
@@ -41,28 +47,46 @@ const Virtualizer: FC<IVirtualizerProps> = ({ style, className, classNames = [] 
         style={{
           height: '100%',
           width: '100%',
-          overflowY: 'auto',
+          overflow: 'auto',
           contain: 'strict',
         }}
       >
         <div
-          style={{
-            height: `${virtualizer.getTotalSize()}px`,
-            width: '100%',
-            position: 'relative',
-          }}
+          style={
+            orientation === 'vertical'
+              ? {
+                  height: `${virtualizer.getTotalSize()}px`,
+                  width: '100%',
+                  position: 'relative',
+                }
+              : {
+                  width: `${virtualizer.getTotalSize()}px`,
+                  height: '100%',
+                  position: 'relative',
+                }
+          }
         >
           {items.map((virtualRow) => (
             <div
               key={virtualRow.index}
               className={`virtualizer-item ${virtualRow.index % 2 ? 'virtualizer-item-odd' : 'virtualizer-item-even'}`}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${items[0]?.start ?? 0}px)`,
-              }}
+              style={
+                orientation === 'vertical'
+                  ? {
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${items[0]?.start ?? 0}px)`,
+                    }
+                  : {
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      height: '100%',
+                      transform: `translateX(${items[0]?.start ?? 0}px)`,
+                    }
+              }
             >
               {virtualRow.index === 0 ? (
                 <IteratorProvider>
