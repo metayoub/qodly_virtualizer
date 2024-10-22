@@ -28,12 +28,19 @@ const Virtualizer: FC<IVirtualizerProps> = ({ style, className, classNames = [] 
   const items = virtualizer.getVirtualItems();
 
   return (
-    <div ref={connect} className={cn('w-fit h-fit border border-gray-300', className, classNames)}>
+    <div
+      ref={connect}
+      style={style}
+      id="virtualizer"
+      className={cn('virtualizer w-fit h-fit border border-gray-300', className, classNames)}
+    >
       <div
         ref={parentRef}
-        className="List"
+        id="virtualizer-list"
+        className="virtualizer-list"
         style={{
-          ...style,
+          height: '100%',
+          width: '100%',
           overflowY: 'auto',
           contain: 'strict',
         }}
@@ -48,7 +55,7 @@ const Virtualizer: FC<IVirtualizerProps> = ({ style, className, classNames = [] 
           {items.map((virtualRow) => (
             <div
               key={virtualRow.index}
-              className={virtualRow.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
+              className={`virtualizer-item ${virtualRow.index % 2 ? 'virtualizer-item-odd' : 'virtualizer-item-even'}`}
               style={{
                 position: 'absolute',
                 top: 0,
@@ -60,9 +67,9 @@ const Virtualizer: FC<IVirtualizerProps> = ({ style, className, classNames = [] 
               {virtualRow.index === 0 ? (
                 <IteratorProvider>
                   <Element
-                    id="carousel"
+                    id="element"
                     className="w-full h-full"
-                    role="carousel-header"
+                    role="element"
                     is={resolver.StyleBox}
                     deletable={false}
                     canvas

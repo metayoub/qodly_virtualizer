@@ -22,6 +22,7 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
   const parentRef = useRef(null);
   const [selected, setSelected] = useState(-1);
   const [_scrollIndex, setScrollIndex] = useState(0);
+
   const [count, setCount] = useState(0);
   const {
     sources: { datasource: ds, currentElement: currentDs },
@@ -87,12 +88,19 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
   };
 
   return (
-    <div ref={connect} className={cn('w-fit h-fit', className, classNames)}>
+    <div
+      ref={connect}
+      style={style}
+      id="virtualizer"
+      className={cn('w-fit h-fit', className, classNames)}
+    >
       <div
         ref={parentRef}
-        className="List"
+        id="virtualizer-list"
+        className="virtualizer-list"
         style={{
-          ...style,
+          height: '100%',
+          width: '100%',
           overflowY: 'auto',
           contain: 'strict',
         }}
@@ -118,9 +126,11 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
                 key={virtualRow.key}
                 data-index={virtualRow.index}
                 ref={virtualizer.measureElement}
-                className={cn({
+                className={cn('virtualizer-item', {
                   selected: virtualRow.index === selected,
                   'bg-purple-200': virtualRow.index === selected,
+                  'virtualizer-item-odd': virtualRow.index % 2 === 0,
+                  'virtualizer-item-even': virtualRow.index % 2 === 1,
                 })}
                 onClick={() => handleClick(virtualRow.index)}
               >
@@ -131,9 +141,9 @@ const Virtualizer: FC<IVirtualizerProps> = ({ iterator, style, className, classN
                   iterator={iterator}
                 >
                   <Element
-                    id="carousel"
+                    id="element"
                     className="h-full w-full "
-                    role="carousel-header"
+                    role="element"
                     is={resolver.StyleBox}
                     canvas
                   />
