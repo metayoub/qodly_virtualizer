@@ -8,6 +8,7 @@ export default {
     displayName: 'Virtualizer',
     kind: EComponentKind.BASIC,
     props: {
+      iterable: true,
       orientation: 'vertical',
       columns: 4,
       classNames: [],

@@ -9,7 +9,7 @@ import {
   entitySubject,
   EntityActions,
 } from '@ws-ui/webform-editor';
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useRef, useState } from 'react';
 import { IVirtualizerProps } from './Virtualizer.config';
 import VerticalVirtualizer from './VerticalVirtualizer';
 import HorizontalVirtualizer from './HorizontalVirtualizer';
@@ -32,24 +32,12 @@ const Virtualizer: FC<IVirtualizerProps> = ({
   const [count, setCount] = useState(0);
   const {
     sources: { datasource: ds, currentElement: currentDs },
-  } = useSources();
+  } = useSources({ acceptIteratorSel: true });
   const { fetchIndex } = useDataLoader({
     source: ds,
   });
 
   const { resolver } = useEnhancedEditor(selectResolver);
-
-  useEffect(() => {
-    // useEffect to fetch data for the first Time
-    if (!ds) return;
-    const init = async () => {
-      const selLength = await ds.getValue('length');
-      setCount(selLength);
-      await fetchIndex(0);
-    };
-
-    init();
-  }, []);
 
   const { updateCurrentDsValue } = useDsChangeHandler({
     source: ds,

@@ -10,9 +10,11 @@ import { FC, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { IVirtualizerProps } from './Virtualizer.config';
 import { Element } from '@ws-ui/craftjs-core';
+import { MdInfoOutline } from 'react-icons/md';
 
 const Virtualizer: FC<IVirtualizerProps> = ({
   orientation = 'vertical',
+  datasource,
   style,
   className,
   classNames = [],
@@ -40,70 +42,77 @@ const Virtualizer: FC<IVirtualizerProps> = ({
       id="virtualizer"
       className={cn('virtualizer w-fit h-fit border border-gray-300', className, classNames)}
     >
-      <div
-        ref={parentRef}
-        id="virtualizer-list"
-        className="virtualizer-list"
-        style={{
-          height: '100%',
-          width: '100%',
-          overflow: 'auto',
-          contain: 'strict',
-        }}
-      >
+      {datasource ? (
         <div
-          style={
-            orientation === 'vertical'
-              ? {
-                  height: `fit-content`,
-                  width: '100%',
-                  position: 'relative',
-                }
-              : {
-                  width: `fit-content`,
-                  height: '100%',
-                  position: 'relative',
-                }
-          }
+          ref={parentRef}
+          id="virtualizer-list"
+          className="virtualizer-list"
+          style={{
+            height: '100%',
+            width: '100%',
+            overflow: 'auto',
+            contain: 'strict',
+          }}
         >
-          {items.map((virtualRow) => (
-            <div
-              key={virtualRow.index}
-              className={`virtualizer-item ${virtualRow.index % 2 ? 'virtualizer-item-odd' : 'virtualizer-item-even'}`}
-              style={
-                orientation === 'vertical'
-                  ? {
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      transform: `translateY(${items[0]?.start ?? 0}px)`,
-                    }
-                  : {
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      height: '100%',
-                      transform: `translateX(${items[0]?.start ?? 0}px)`,
-                    }
-              }
-            >
-              {virtualRow.index === 0 ? (
-                <IteratorProvider>
-                  <Element
-                    id="element"
-                    className="w-full h-full"
-                    role="element"
-                    is={resolver.StyleBox}
-                    deletable={false}
-                    canvas
-                  />
-                </IteratorProvider>
-              ) : null}
-            </div>
-          ))}
+          <div
+            style={
+              orientation === 'vertical'
+                ? {
+                    height: `fit-content`,
+                    width: '100%',
+                    position: 'relative',
+                  }
+                : {
+                    width: `fit-content`,
+                    height: '100%',
+                    position: 'relative',
+                  }
+            }
+          >
+            {items.map((virtualRow) => (
+              <div
+                key={virtualRow.index}
+                className={`virtualizer-item ${virtualRow.index % 2 ? 'virtualizer-item-odd' : 'virtualizer-item-even'}`}
+                style={
+                  orientation === 'vertical'
+                    ? {
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        transform: `translateY(${items[0]?.start ?? 0}px)`,
+                      }
+                    : {
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        height: '100%',
+                        transform: `translateX(${items[0]?.start ?? 0}px)`,
+                      }
+                }
+              >
+                {virtualRow.index === 0 ? (
+                  <IteratorProvider>
+                    <Element
+                      id="element"
+                      className="w-full h-full"
+                      role="element"
+                      is={resolver.StyleBox}
+                      deletable={false}
+                      canvas
+                    />
+                  </IteratorProvider>
+                ) : null}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex h-full flex-col items-center justify-center rounded-lg border bg-purple-400 py-4 text-white">
+          <MdInfoOutline className="mb-1 h-8 w-8" />
+          <p>Please attach a Qodly Source</p>
+        </div>
+      )}
     </div>
   );
 };
