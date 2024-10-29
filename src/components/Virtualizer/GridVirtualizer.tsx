@@ -23,7 +23,8 @@ const GridVirtualizer: FC<IVirtualizer> = ({
 }) => {
   const parentOffsetRef = useRef(0);
   const [parentWidth, setParentWidth] = useState(0);
-
+  const [calculateColumns, setCalculateColumns] = useState(columns);
+  const [columnWidth, setColumnWidth] = useState(0);
   useEffect(() => {
     const handleResize = (entries: ResizeObserverEntry[]) => {
       const { width } = entries[0].contentRect;
@@ -43,21 +44,46 @@ const GridVirtualizer: FC<IVirtualizer> = ({
     return () => resizeObserver.disconnect(); // Clean up observer on unmount
   }, []);
 
+  useEffect(() => {
+    const calculateColumns = () => {
+      if (columns === 0) {
+        if (typeof styleboxWidth === 'string') {
+          if (styleboxWidth.includes('%')) {
+            // Handle percentage-based width
+            const percentage = parseFloat(styleboxWidth) / 100;
+            const columnWidth = parentWidth * percentage;
+            setColumnWidth(columnWidth);
+            return Math.floor(parentWidth / columnWidth);
+          } else if (styleboxWidth.includes('px')) {
+            // Handle fixed pixel-based width
+            const fixedWidth = parseFloat(styleboxWidth);
+            setColumnWidth(fixedWidth);
+            return Math.floor(parentWidth / fixedWidth);
+          }
+        }
+      }
+      return columns;
+    };
+
+    const calculatedColumns = calculateColumns();
+    setCalculateColumns(calculatedColumns);
+  }, [styleboxWidth, parentWidth, columns]);
+
   useLayoutEffect(() => {
     parentOffsetRef.current = parentRef.current?.offsetTop ?? 0;
   }, []);
 
   const virtualizer = useVirtualizer({
-    count: Math.floor(count / columns) + 1,
+    count: Math.floor(count / calculateColumns) + 1,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 450,
   });
 
   const columnVirtualizer = useWindowVirtualizer({
-    count: columns,
+    count: calculateColumns,
     scrollMargin: parentOffsetRef.current,
 
-    estimateSize: () => 45,
+    estimateSize: () => columnWidth,
   });
 
   const columnItems = columnVirtualizer.getVirtualItems();
@@ -98,20 +124,22 @@ const GridVirtualizer: FC<IVirtualizer> = ({
                   <div
                     key={column.key}
                     style={{
-                      width: 'fit-content',
+                      width: columnWidth ? columnWidth : 'fit-content',
                       height: 'fit-content',
                     }}
                     className={cn('virtualizer-item', {
-                      selected: row.index * columns + column.index === selected,
-                      'bg-purple-200': row.index * columns + column.index === selected,
-                      'virtualizer-item-odd': row.index * columns + (column.index % 2) === 0,
-                      'virtualizer-item-even': row.index * columns + (column.index % 2) === 1,
+                      selected: row.index * calculateColumns + column.index === selected,
+                      'bg-purple-200': row.index * calculateColumns + column.index === selected,
+                      'virtualizer-item-odd':
+                        row.index * calculateColumns + (column.index % 2) === 0,
+                      'virtualizer-item-even':
+                        row.index * calculateColumns + (column.index % 2) === 1,
                     })}
-                    onClick={() => handleClick(row.index * columns + column.index)}
+                    onClick={() => handleClick(row.index * calculateColumns + column.index)}
                   >
-                    {row.index * columns + column.index < count ? (
+                    {row.index * calculateColumns + column.index < count ? (
                       <EntityProvider
-                        index={row.index * columns + column.index}
+                        index={row.index * calculateColumns + column.index}
                         selection={ds}
                         current={currentDs?.id}
                         iterator={iterator}
