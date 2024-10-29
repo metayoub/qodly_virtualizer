@@ -82,8 +82,7 @@ const GridVirtualizer: FC<IVirtualizer> = ({
   const columnVirtualizer = useWindowVirtualizer({
     count: calculateColumns,
     scrollMargin: parentOffsetRef.current,
-
-    estimateSize: () => columnWidth,
+    estimateSize: () => 35,
   });
 
   const columnItems = columnVirtualizer.getVirtualItems();
