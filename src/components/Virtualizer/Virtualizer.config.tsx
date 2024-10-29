@@ -78,6 +78,7 @@ export default {
 export interface IVirtualizerProps extends webforms.ComponentProps {
   orientation?: 'horizontal' | 'vertical' | 'grid';
   columns?: number;
+  styleboxWidth?: number | string;
 }
 
 export interface IVirtualizer extends webforms.ComponentProps {
@@ -90,4 +91,5 @@ export interface IVirtualizer extends webforms.ComponentProps {
   resolver: any;
   count: number;
   columns?: number;
+  styleboxWidth?: number | string;
 }

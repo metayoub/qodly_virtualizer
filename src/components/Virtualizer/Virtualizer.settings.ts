@@ -33,7 +33,7 @@ const commonSettings: TSetting[] = [
     type: ESetting.NUMBER_FIELD,
     key: 'columns',
     defaultValue: 1,
-    min: 1,
+    min: 0,
     max: 10,
   },
 ];

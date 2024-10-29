@@ -22,6 +22,7 @@ const Virtualizer: FC<IVirtualizerProps> = ({
   style,
   className,
   classNames = [],
+  styleboxWidth,
 }) => {
   const { connect, emit } = useRenderer();
   const { id: nodeID } = useEnhancedNode();
@@ -125,6 +126,7 @@ const Virtualizer: FC<IVirtualizerProps> = ({
           handleClick={handleClick}
           resolver={resolver}
           columns={columns}
+          styleboxWidth={styleboxWidth}
         />
       );
 

@@ -1,4 +1,4 @@
-import { FC, useLayoutEffect, useRef } from 'react';
+import { FC, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Element } from '@ws-ui/craftjs-core';
 import cn from 'classnames';
 import { EntityProvider } from '@ws-ui/webform-editor';
@@ -19,8 +19,29 @@ const GridVirtualizer: FC<IVirtualizer> = ({
   handleClick,
   resolver,
   columns = 4,
+  styleboxWidth,
 }) => {
   const parentOffsetRef = useRef(0);
+  const [parentWidth, setParentWidth] = useState(0);
+
+  useEffect(() => {
+    const handleResize = (entries: ResizeObserverEntry[]) => {
+      const { width } = entries[0].contentRect;
+      setParentWidth(width);
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
+
+    if (parentRef.current) {
+      resizeObserver.observe(parentRef.current);
+
+      // Set initial dimensions
+      const { offsetWidth } = parentRef.current;
+      setParentWidth(offsetWidth);
+    }
+
+    return () => resizeObserver.disconnect(); // Clean up observer on unmount
+  }, []);
 
   useLayoutEffect(() => {
     parentOffsetRef.current = parentRef.current?.offsetTop ?? 0;

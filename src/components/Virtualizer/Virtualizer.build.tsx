@@ -6,12 +6,12 @@ import {
   IteratorProvider,
 } from '@ws-ui/webform-editor';
 import cn from 'classnames';
-import { FC, useRef } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { IVirtualizerProps } from './Virtualizer.config';
 import { Element } from '@ws-ui/craftjs-core';
 import { MdInfoOutline } from 'react-icons/md';
-
+import set from 'lodash/set';
 const Virtualizer: FC<IVirtualizerProps> = ({
   orientation = 'vertical',
   datasource,
@@ -20,11 +20,36 @@ const Virtualizer: FC<IVirtualizerProps> = ({
   classNames = [],
 }) => {
   const {
+    linkedNodes,
+    actions: { setProp },
     connectors: { connect },
-  } = useEnhancedNode();
+  } = useEnhancedNode((node) => ({
+    linkedNodes: node.data.linkedNodes,
+    dom: node.dom,
+  }));
+  const { resolver, query } = useEnhancedEditor(selectResolver);
+
   useDatasourceSub();
+  const container = linkedNodes.element ? query.node(linkedNodes.element).get() : null;
+
+  useEffect(() => {
+    if (orientation !== 'grid' || !container) return;
+    setProp((props: IVirtualizerProps) => {
+      set(props, 'styleboxWidth', container?.data.props?.style?.width);
+    });
+  }, [
+    orientation,
+    classNames,
+    style?.width,
+    style?.height,
+    container?.dom,
+    container?.data.props?.style?.width,
+    container?.data.props?.style?.height,
+    container?.data.nodes.length,
+  ]);
+
   const parentRef = useRef(null);
-  const { resolver } = useEnhancedEditor(selectResolver);
+
   const virtualizer = useVirtualizer({
     horizontal: orientation === 'horizontal',
     count: 10000,
@@ -58,12 +83,10 @@ const Virtualizer: FC<IVirtualizerProps> = ({
             style={
               orientation === 'vertical'
                 ? {
-                    height: `fit-content`,
                     width: '100%',
                     position: 'relative',
                   }
                 : {
-                    width: `fit-content`,
                     height: '100%',
                     position: 'relative',
                   }
@@ -95,7 +118,7 @@ const Virtualizer: FC<IVirtualizerProps> = ({
                   <IteratorProvider>
                     <Element
                       id="element"
-                      className="w-full h-full"
+                      style={{ height: '150px', width: '100%' }}
                       role="element"
                       is={resolver.StyleBox}
                       deletable={false}
