@@ -6,12 +6,13 @@ import {
   IteratorProvider,
 } from '@ws-ui/webform-editor';
 import cn from 'classnames';
-import { FC, useEffect, useRef } from 'react';
+import { FC, useCallback, useEffect, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { IVirtualizerProps } from './Virtualizer.config';
 import { Element } from '@ws-ui/craftjs-core';
 import { MdInfoOutline } from 'react-icons/md';
 import set from 'lodash/set';
+
 const Virtualizer: FC<IVirtualizerProps> = ({
   orientation = 'vertical',
   datasource,
@@ -60,14 +61,13 @@ const Virtualizer: FC<IVirtualizerProps> = ({
 
   const items = virtualizer.getVirtualItems();
 
-  return (
-    <div
-      ref={connect}
-      style={style}
-      id="virtualizer"
-      className={cn('virtualizer w-fit h-fit border border-gray-300', className, classNames)}
-    >
-      {datasource ? (
+  const VirtualizerView = useCallback(
+    ({ orientation }: IVirtualizerProps) => {
+      const isHorizontal = orientation === 'horizontal';
+      const isVertical = orientation === 'vertical';
+      const isGrid = orientation === 'grid';
+
+      return (
         <div
           ref={parentRef}
           id="virtualizer-list"
@@ -75,50 +75,43 @@ const Virtualizer: FC<IVirtualizerProps> = ({
           style={{
             height: '100%',
             width: '100%',
-            overflow: 'auto',
-            contain: 'strict',
+            overflowY: isHorizontal || isGrid ? 'auto' : 'hidden',
+            overflowX: isVertical ? 'auto' : 'hidden',
+            position: 'relative',
           }}
         >
           <div
-            style={
-              orientation === 'vertical'
-                ? {
-                    width: '100%',
-                    position: 'relative',
-                  }
-                : {
-                    height: '100%',
-                    position: 'relative',
-                  }
-            }
+            style={{
+              height: isHorizontal || isGrid ? '100%' : 'auto',
+              width: isVertical || isGrid ? '100%' : 'auto',
+              position: 'relative',
+              transform: isHorizontal
+                ? `translateX(${items[0]?.start ?? 0}px)`
+                : isVertical
+                  ? `translateY(${items[0]?.start ?? 0}px)`
+                  : 'none',
+            }}
           >
             {items.map((virtualRow) => (
               <div
-                key={virtualRow.index}
-                className={`virtualizer-item ${virtualRow.index % 2 ? 'virtualizer-item-odd' : 'virtualizer-item-even'}`}
-                style={
-                  orientation === 'vertical'
-                    ? {
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        transform: `translateY(${items[0]?.start ?? 0}px)`,
-                      }
-                    : {
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        height: '100%',
-                        transform: `translateX(${items[0]?.start ?? 0}px)`,
-                      }
-                }
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                className={`virtualizer-item h-full ${virtualRow.index % 2 === 0 ? 'virtualizer-item-odd' : 'virtualizer-item-even'}`}
+                style={{
+                  position: 'relative',
+                  height: isGrid || isHorizontal ? '100%' : 'auto',
+                }}
               >
                 {virtualRow.index === 0 ? (
                   <IteratorProvider>
                     <Element
                       id="element"
-                      style={{ height: '150px', width: '100%' }}
+                      style={{
+                        width: isHorizontal ? 'fit-content' : isGrid ? '200px' : '100%',
+                        height: isVertical ? 'fit-content' : isGrid ? '200px' : '100%',
+                        minWidth: isHorizontal ? '150px' : 'auto',
+                        minHeight: isVertical ? '100px' : 'auto',
+                      }}
                       role="element"
                       is={resolver.StyleBox}
                       deletable={false}
@@ -130,12 +123,26 @@ const Virtualizer: FC<IVirtualizerProps> = ({
             ))}
           </div>
         </div>
-      ) : (
-        <div className="flex h-full flex-col items-center justify-center rounded-lg border bg-purple-400 py-4 text-white">
-          <MdInfoOutline className="mb-1 h-8 w-8" />
-          <p>Please attach a Qodly Source</p>
-        </div>
-      )}
+      );
+    },
+    [items],
+  );
+
+  const EmptyState = () => (
+    <div className="flex h-full flex-col items-center justify-center rounded-lg border bg-purple-400 py-4 text-white">
+      <MdInfoOutline className="mb-1 h-8 w-8" />
+      <p>Please attach a Qodly Source</p>
+    </div>
+  );
+
+  return (
+    <div
+      ref={connect}
+      style={style}
+      id="virtualizer"
+      className={cn('virtualizer w-fit h-fit border border-gray-300', className, classNames)}
+    >
+      {datasource ? <VirtualizerView orientation={orientation} /> : <EmptyState />}
     </div>
   );
 };
