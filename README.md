@@ -6,15 +6,15 @@ Iterate on data for smarter designs by using the custom component **"Virtualizer
 
 - **Horizontal Virtualizer:**
 
-![Horizontal Virtualizer](image.png)
+![Horizontal Virtualizer](public/image.png)
 
 - **Vertical Virtualizer:**
 
-![Vertical Virtualizer](image-1.png)
+![Vertical Virtualizer](public/image-1.png)
 
 - **Grid Virtualizer:**
 
-![Grid Virtualizer](image-2.png)
+![Grid Virtualizer](public/image-2.png)
 
 ## Properties
 
