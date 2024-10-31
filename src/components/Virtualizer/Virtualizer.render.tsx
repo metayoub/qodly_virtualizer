@@ -17,7 +17,6 @@ import GridVirtualizer from './GridVirtualizer';
 
 const Virtualizer: FC<IVirtualizerProps> = ({
   orientation = 'vertical',
-  columns,
   iterator,
   style,
   className,
@@ -125,7 +124,6 @@ const Virtualizer: FC<IVirtualizerProps> = ({
           count={count}
           handleClick={handleClick}
           resolver={resolver}
-          columns={columns}
           styleboxWidth={styleboxWidth}
         />
       );

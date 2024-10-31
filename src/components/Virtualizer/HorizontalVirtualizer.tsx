@@ -36,7 +36,7 @@ const HorizontalVirtualizer: FC<IVirtualizer> = ({
     >
       <div
         ref={parentRef}
-        className="List"
+        className="virtualizer-list"
         style={{ height: '100%', width: '100%', overflowY: 'auto' }}
       >
         <div

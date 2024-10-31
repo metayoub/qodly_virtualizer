@@ -28,14 +28,6 @@ const commonSettings: TSetting[] = [
       },
     ],
   },
-  {
-    label: 'number of columns',
-    type: ESetting.NUMBER_FIELD,
-    key: 'columns',
-    defaultValue: 1,
-    min: 0,
-    max: 10,
-  },
 ];
 
 const dataAccessSettings: TSetting[] = [

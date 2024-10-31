@@ -10,7 +10,6 @@ export default {
     props: {
       iterable: true,
       orientation: 'vertical',
-      columns: 4,
       classNames: [],
       events: [],
     },
@@ -65,11 +64,10 @@ export default {
   },
   defaultProps: {
     orientation: 'vertical',
-    columns: 4,
     classNames: [],
     iterable: true,
     style: {
-      height: `200px`,
+      height: `300px`,
       width: `400px`,
     },
   },
@@ -77,7 +75,6 @@ export default {
 
 export interface IVirtualizerProps extends webforms.ComponentProps {
   orientation?: 'horizontal' | 'vertical' | 'grid';
-  columns?: number;
   styleboxWidth?: number | string;
 }
 
@@ -90,6 +87,5 @@ export interface IVirtualizer extends webforms.ComponentProps {
   parentRef: any;
   resolver: any;
   count: number;
-  columns?: number;
   styleboxWidth?: number | string;
 }
